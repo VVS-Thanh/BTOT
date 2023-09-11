@@ -1,5 +1,6 @@
 package com.example.btot;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,11 +32,7 @@ public class MainActivity extends AppCompatActivity {
         myDatabase = new MyDatabase(this);
         myDatabase.open();
         myDatabase.addPhongBan("PB001", "Phòng Ban A", 10);
-
-// Thêm phòng ban 2
         myDatabase.addPhongBan("PB002", "Phòng Ban B", 15);
-
-// Thêm phòng ban 3
         myDatabase.addPhongBan("PB003", "Phòng Ban C", 20);
 
         spinnerPhongBan = findViewById(R.id.spinnerPhongBan);
@@ -54,14 +51,14 @@ public class MainActivity extends AppCompatActivity {
 
         spinnerPhongBan.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                loadNhanVien();
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String selectedMaPhongBan = myDatabase.getMaPhongBanByTenPhongBan(adapterView.getSelectedItem().toString());
+                loadNhanVien(selectedMaPhongBan);
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-                // Không có phòng ban nào được chọn, hiển thị toàn bộ danh sách nhân viên
-                loadAllNhanVien();
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // Không cần xử lý
             }
         });
 
@@ -89,7 +86,19 @@ public class MainActivity extends AppCompatActivity {
         btnOpenAct.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Thực hiện mở Activity khác (nếu có)
+                // Lấy mã phòng ban đang được chọn
+                String selectedMaPhongBan = myDatabase.getMaPhongBanByTenPhongBan(spinnerPhongBan.getSelectedItem().toString());
+                // Lấy số lượng nhân viên của phòng ban đó
+                int soLuongNhanVien = myDatabase.getSoLuongNhanVienTrongPhongBan(selectedMaPhongBan);
+
+                // Tạo Intent để mở Activity_2
+                Intent intent = new Intent(MainActivity.this, Activity_2.class);
+                // Đưa tên phòng ban và số lượng nhân viên vào Intent
+                intent.putExtra("phongBan", spinnerPhongBan.getSelectedItem().toString());
+                intent.putExtra("soLuongNhanVien", soLuongNhanVien);
+
+                // Mở Activity_2
+                startActivity(intent);
             }
         });
     }
@@ -101,15 +110,14 @@ public class MainActivity extends AppCompatActivity {
         spinnerPhongBan.setAdapter(adapter);
     }
 
-    private void loadNhanVien() {
-        String selectedPhongBan = spinnerPhongBan.getSelectedItem().toString();
-        List<String> nhanVienInfoList = myDatabase.getNhanVienInfoByPhongBan(selectedPhongBan);
+    private void loadNhanVien(String maPhongBan) {
+        List<String> nhanVienInfoList = myDatabase.getNhanVienInfoByPhongBan(maPhongBan);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, nhanVienInfoList);
         lvDanhSach.setAdapter(adapter);
     }
 
     private void loadAllNhanVien() {
-        List<String> nhanVienInfoList = myDatabase.getNhanVienInfoByPhongBan("");
+        List<String> nhanVienInfoList = myDatabase.getAllNhanVienInfo();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, nhanVienInfoList);
         lvDanhSach.setAdapter(adapter);
     }
@@ -141,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Thêm nhân viên thành công", Toast.LENGTH_SHORT).show();
             layoutThemNhanVien.setVisibility(View.GONE);
             clearEditTextFields();
-            loadNhanVien();
+            loadNhanVien(phongBan);
         }
     }
 
@@ -156,7 +164,8 @@ public class MainActivity extends AppCompatActivity {
         myDatabase.deleteNhanVien(maNV);
         Toast.makeText(this, "Xóa nhân viên thành công", Toast.LENGTH_SHORT).show();
         clearEditTextFields();
-        loadNhanVien();
+        String selectedMaPhongBan = spinnerPhongBan.getSelectedItem().toString();
+        loadNhanVien(selectedMaPhongBan);
     }
 
     private void clearEditTextFields() {

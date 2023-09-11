@@ -9,8 +9,8 @@ import androidx.annotation.Nullable;
 
 public class DBHelper extends SQLiteOpenHelper {
     private static String TAG = "DatabaseHelper";
-    private static final String DB_Name ="bt2.db";
-    private static final int DB_Version = 1;
+    private static final String DB_Name ="btot.db";
+    private static final int DB_Version = 3;
     private SQLiteDatabase mDefaultWritableDatabase;
     private String databasePath;
 
@@ -22,15 +22,15 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         this.mDefaultWritableDatabase = sqLiteDatabase;
         String sql1 = "CREATE TABLE PhongBans (" +
-                "maPhongBan String PRIMARY KEY NOT NULL," +
+                "maPhongBan text PRIMARY KEY NOT NULL," +
                 "tenPhongBan text NOT NULL,"+
-                "soPhongban int default null)";
+                "soPhongban INTEGER default null)";
         sqLiteDatabase.execSQL(sql1);
 
         String sql2 = "CREATE TABLE NhanViens(" +
-                "maNhanVien String Primary key not null," +
-                "tenNhanVien String not null UNIQUE," +
-                "tuoiNhanVien INTEGER not null,"+
+                "maNhanVien text Primary key not null," +
+                "tenNhanVien text not null," +
+                "tuoi INTEGER not null," +
                 "maPhongBan String NOT NULL," +
                 "FOREIGN KEY (maPhongBan) REFERENCES PhongBans (maPhongBan))";
         sqLiteDatabase.execSQL(sql2);
